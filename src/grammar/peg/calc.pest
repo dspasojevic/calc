@@ -1,0 +1,41 @@
+// No whitespace allowed between digits
+float = @{ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT+ }
+integer = @{ ASCII_DIGIT+ }
+
+number = _{ float | integer }
+
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* }
+
+variable = @{ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* }
+
+primary = _{ number | variable | "(" ~ expr ~ ")" }
+
+comment = { "//" ~ (!"\n" ~ ANY)* }
+
+unary_op = _{ unary_minus }
+    unary_minus = { "-" }
+
+atom = _{ unary_op? ~ primary }
+
+bin_op = _{ add | subtract | multiply | divide | modulo | power }
+	add = { "+" }
+	subtract = { "-" }
+	multiply = { "*" }
+	divide = { "/" }
+	modulo = { "%" }
+	power = { "^" }
+
+expr = { atom ~ (bin_op ~ atom)* }
+
+assignment = { identifier ~ ":=" ~ expr }
+
+commands = @{ ("state" | "reset") }
+
+command = { ":" ~ commands }
+
+// We can't have SOI and EOI on expr directly, because it is used recursively (e.g. with parentheses)
+equation = _{ SOI ~ (assignment | expr | command) ~ comment? ~ EOI }
+
+WHITESPACE = _{ " " }
+
+partial_term = { (identifier ~ ":=")? ~(atom ~ ((bin_op ~ atom) | bin_op)*)  ~ comment? ~ ANY*? }
