@@ -19,6 +19,14 @@ pub mod expr_writer {
         End,
     }
 
+    fn format_value(value: f64) -> String {
+        if value.is_nan() {
+            "???".to_string()
+        } else {
+            format!("{}", value)
+        }
+    }
+
     fn do_write_expr_tree(expr: &Expr, columns: Vec<Column>, active_column: usize) {
         const EDGE: &str = "└─";
         const PIPE: &str = "│ ";
@@ -47,11 +55,7 @@ pub mod expr_writer {
             }
             Expr::Float { value, variable } => {
                 let mut styled_text = StyledText::new();
-                if value.is_nan() {
-                    styled_text.push((Style::new().fg(Color::Blue), "???".to_string()));
-                } else {
-                    styled_text.push((Style::new().fg(Color::Blue), value.to_string()));
-                }
+                styled_text.push((Style::new().fg(Color::Blue), format_value(value)));
 
                 if let Some(variable) = variable {
                     styled_text.push((Style::new().fg(Color::Purple), format!(" ({})", variable.name)));
@@ -66,12 +70,7 @@ pub mod expr_writer {
             }
             Expr::BinaryOperation { lhs, op, rhs, value } => {
                 let mut styled_text = StyledText::new();
-
-                if value.is_nan() {
-                    styled_text.push((Style::new().fg(Color::Cyan), "???".to_string()));
-                } else {
-                    styled_text.push((Style::new().fg(Color::Cyan), value.to_string()));
-                }
+                styled_text.push((Style::new().fg(Color::Cyan), format_value(*value)));
 
                 styled_text.push((Style::new().fg(Color::White), " = ".to_string()));
                 styled_text.push((Style::new().fg(Color::White), format!("{}", op)));
