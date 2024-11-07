@@ -29,7 +29,7 @@ expr = { atom ~ (bin_op ~ atom)* }
 
 assignment = { identifier ~ ":=" ~ expr }
 
-commands = @{ ("state" | "reset") }
+commands = @{ ("state" | "reset" | "debug") }
 
 command = { ":" ~ commands }
 

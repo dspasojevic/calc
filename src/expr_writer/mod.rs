@@ -55,7 +55,7 @@ pub mod expr_writer {
             }
             Expr::Float { value, variable } => {
                 let mut styled_text = StyledText::new();
-                styled_text.push((Style::new().fg(Color::Blue), format_value(value)));
+                styled_text.push((Style::new().fg(Color::Blue), format_value(*value)));
 
                 if let Some(variable) = variable {
                     styled_text.push((Style::new().fg(Color::Purple), format!(" ({})", variable.name)));

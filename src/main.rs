@@ -19,8 +19,9 @@ fn main() {
     let args = Arguments::parse();
     let mut variables = HashMap::new();
     if let Some(expression) = args.expression {
-        handle_input(expression, &mut variables, None);
+        handle_input(expression, &mut variables, &mut None);
     } else {
+        let mut last_expr = None;
         let mut line_editor = Reedline::create().with_highlighter(Box::new(ArithmeticHighlighter));
         let prompt = DefaultPrompt {
             left_prompt: DefaultPromptSegment::Basic("> ".to_string()),
@@ -31,7 +32,7 @@ fn main() {
             let sig = line_editor.read_line(&prompt);
             match sig {
                 Ok(Signal::Success(buffer)) => {
-                    handle_input(buffer, &mut variables, None);
+                    handle_input(buffer, &mut variables, &mut last_expr);
                 }
                 Ok(Signal::CtrlD) | Ok(Signal::CtrlC) => {
                     println!("\nAborted!");
@@ -63,7 +64,7 @@ fn unbound_variables(expr: &Expr) -> HashSet<String> {
     unbound
 }
 
-fn handle_input(buffer: String, variables: &mut HashMap<String, Expr>, last_expr: Option<Expr>) {
+fn handle_input(buffer: String, variables: &mut HashMap<String, Expr>, last_expr: &mut Option<Expr>) {
     match parse_equation(&buffer) {
         Ok(mut pairs) => {
             if let Some(pair) = pairs.next() {
@@ -81,7 +82,8 @@ fn handle_input(buffer: String, variables: &mut HashMap<String, Expr>, last_expr
                             variables.insert(variable.clone(), expr.clone());
                         }
 
-                        write_expr_tree(expr);
+                        write_expr_tree(expr.clone());
+                        last_expr.replace(expr);
                     }
                     Rule::command => {
                         let command = pair.into_inner().next().unwrap().as_str();
@@ -106,7 +108,8 @@ fn handle_input(buffer: String, variables: &mut HashMap<String, Expr>, last_expr
                         if unbound.len() > 0 {
                             println!("Unbound variables: {:?}", unbound);
                         }
-                        write_expr_tree(expr);
+                        write_expr_tree(expr.clone());
+                        last_expr.replace(expr);
                     }
                 }
             }
